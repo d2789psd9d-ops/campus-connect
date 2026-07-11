@@ -1,0 +1,724 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Campus Connect — Sign In</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #0a1628; --navy2: #1a3a5c; --green: #2e7d32;
+      --emerald: #6ee7b7; --bg: #ffffff; --fg: #0f1923;
+      --muted: #5a6a7e; --subtle: #f4f6f9; --border: rgba(26,58,92,0.13);
+      --card: #ffffff; --red: #c62828;
+      font-family: 'Nunito', sans-serif;
+    }
+    body { background: var(--bg); color: var(--fg); min-height: 100vh; display: flex; }
+    button { cursor: pointer; font-family: 'Nunito', sans-serif; }
+    input, select, textarea { font-family: 'Nunito', sans-serif; }
+    .hidden { display: none !important; }
+
+    /* ── Layout ── */
+    .layout { display: flex; min-height: 100vh; width: 100%; }
+
+    /* ── Left panel ── */
+    .left {
+      width: 420px; flex-shrink: 0; position: relative;
+      overflow: hidden; background: var(--navy);
+      display: none; flex-direction: column;
+    }
+    @media (min-width: 1024px) { .left { display: flex; } }
+
+    .slide-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: opacity .55s ease; }
+    .slide-ov {
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(10,22,40,.55) 0%, rgba(10,22,40,.2) 40%, rgba(10,22,40,.72) 75%, rgba(10,22,40,.97) 100%);
+    }
+    .left-ct { position: relative; z-index: 2; display: flex; flex-direction: column; height: 100%; padding: 40px; }
+
+    /* Big logo */
+    .big-logo { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+    .logo-badge {
+      position: relative; border-radius: 18px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--navy2), var(--green));
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 28px rgba(26,58,92,.45);
+    }
+    .logo-badge.lg { width: 80px; height: 80px; }
+    .logo-badge.md { width: 38px; height: 38px; border-radius: 10px; }
+    .logo-badge.sm { width: 28px; height: 28px; border-radius: 8px; }
+    .logo-badge span { font-weight: 800; color: #fff; letter-spacing: -1px; }
+    .logo-badge.lg span { font-size: 2rem; }
+    .logo-badge.md span { font-size: .9rem; }
+    .logo-badge.sm span { font-size: .75rem; }
+    .logo-dot { position: absolute; border-radius: 50%; background: var(--emerald); box-shadow: 0 0 8px rgba(110,231,183,.85); }
+    .logo-badge.lg .logo-dot { width: 12px; height: 12px; top: -4px; right: -4px; }
+    .logo-badge.md .logo-dot { width: 9px; height: 9px; top: -3px; right: -3px; }
+    .logo-badge.sm .logo-dot { width: 7px; height: 7px; top: -2px; right: -2px; }
+    .logo-text { text-align: center; }
+    .logo-text .lm { font-weight: 800; color: #fff; letter-spacing: .06em; text-shadow: 0 2px 12px rgba(0,0,0,.4); }
+    .logo-text .lm span { color: var(--emerald); }
+    .logo-text .ls { font-family: 'DM Mono', monospace; color: rgba(255,255,255,.45); letter-spacing: .12em; text-transform: uppercase; }
+
+    /* Slide caption */
+    .slide-cap { transition: opacity .5s, transform .5s; }
+    .slide-num { font-family: 'DM Mono', monospace; font-size: .67rem; color: rgba(255,255,255,.5); letter-spacing: .14em; text-transform: uppercase; margin-bottom: 4px; }
+    .slide-txt { font-size: 1.2rem; font-weight: 700; color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,.5); }
+    .dots { display: flex; gap: 7px; margin-top: 14px; }
+    .dot { height: 6px; border-radius: 3px; border: none; background: rgba(255,255,255,.3); transition: width .3s, background .3s; cursor: pointer; }
+    .dot.on { background: var(--emerald); }
+    .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .pill { display: flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 999px; font-size: .7rem; font-weight: 700; color: #fff; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18); }
+    .pill-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--emerald); }
+
+    /* ── Right panel ── */
+    .right { flex: 1; overflow-y: auto; }
+    .form-wrap { max-width: 560px; margin: 0 auto; padding: 40px 24px; display: flex; flex-direction: column; gap: 22px; }
+
+    /* Mobile logo bar */
+    .mob-logo { display: flex; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--navy), var(--navy2)); border-radius: 14px; padding: 12px 16px; }
+    @media (min-width: 1024px) { .mob-logo { display: none; } }
+    .mob-logo .lm { font-size: .88rem; font-weight: 800; color: #fff; letter-spacing: .04em; }
+    .mob-logo .lm span { color: var(--emerald); }
+    .mob-logo .ls { font-size: .6rem; }
+
+    /* ── Heading ── */
+    .heading h2 { font-size: 1.5rem; font-weight: 800; }
+    .heading p { font-size: .84rem; color: var(--muted); margin-top: 4px; }
+    .heading a { color: var(--navy2); font-weight: 700; text-decoration: none; }
+    .heading a:hover { text-decoration: underline; }
+
+    /* ── Sign in ── */
+    .si-form { display: flex; flex-direction: column; gap: 15px; }
+    .si-err { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 10px; background: #fff5f5; border: 1px solid #fca5a5; color: var(--red); font-size: .8rem; font-weight: 600; }
+    .si-err svg { width: 14px; height: 14px; stroke: var(--red); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+    .divider { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: .78rem; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .demo-box { background: var(--subtle); border-radius: 11px; padding: 11px 14px; font-size: .74rem; color: var(--muted); line-height: 1.6; }
+    .demo-box strong { color: var(--fg); }
+    .demo-box code { font-family: 'DM Mono', monospace; color: var(--navy2); }
+    .forgot { font-size: .78rem; color: var(--navy2); font-weight: 700; display: block; text-align: right; text-decoration: none; }
+    .forgot:hover { text-decoration: underline; }
+
+    /* ── Buttons ── */
+    .btn { width: 100%; padding: 11px; border-radius: 11px; border: none; font-size: .86rem; font-weight: 800; cursor: pointer; transition: opacity .18s; }
+    .btn-navy { background: linear-gradient(135deg, var(--navy2), #1e4d7b); color: #fff; }
+    .btn-navy:hover { opacity: .9; }
+    .btn-outline { background: var(--subtle); border: 1.5px solid var(--border); color: var(--fg); }
+    .btn-outline:hover { background: #e8edf4; }
+    .btn-green { background: linear-gradient(135deg, #1b5e20, var(--green)); color: #fff; }
+    .btn-green:hover { opacity: .9; }
+    .btn-orange { background: linear-gradient(135deg, #b7450a, #e05c1a); color: #fff; }
+
+    /* ── Type cards ── */
+    .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 480px) { .type-grid { grid-template-columns: 1fr; } }
+    .type-card { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 22px 14px; border-radius: 18px; border: 2px solid var(--border); background: #fff; cursor: pointer; text-align: center; transition: border-color .2s, background .2s; }
+    .type-card:hover { border-color: var(--navy2); background: #eef2f7; }
+    .ti { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, rgba(26,58,92,.1), rgba(46,125,50,.1)); display: flex; align-items: center; justify-content: center; }
+    .ti svg { width: 22px; height: 22px; stroke: var(--navy2); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .tl { font-size: .88rem; font-weight: 800; }
+    .td2 { font-size: .72rem; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+    .tc { font-size: .72rem; font-weight: 700; color: var(--navy2); display: flex; align-items: center; gap: 3px; }
+    .tc svg { width: 11px; height: 11px; stroke: var(--navy2); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ── Stats bar ── */
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: linear-gradient(135deg, var(--navy), var(--navy2)); border-radius: 16px; padding: 14px; }
+    .sv { font-size: .95rem; font-weight: 800; color: var(--emerald); text-align: center; }
+    .sl { font-size: .64rem; color: rgba(255,255,255,.45); text-align: center; margin-top: 2px; line-height: 1.3; }
+
+    /* ── Step indicator ── */
+    .step-hdr { display: flex; align-items: center; justify-content: space-between; }
+    .pips { display: flex; gap: 4px; }
+    .pip { height: 6px; border-radius: 3px; transition: width .3s, background .3s; }
+    .step-lbl { font-family: 'DM Mono', monospace; font-size: .7rem; color: var(--muted); margin-left: 10px; }
+    .change-btn { font-size: .72rem; color: var(--muted); background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+    .change-btn:hover { color: var(--fg); }
+    .change-btn svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ── Role badge ── */
+    .role-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; background: linear-gradient(90deg, var(--navy2), var(--green)); font-size: .72rem; font-weight: 800; color: #fff; }
+    .role-badge svg { width: 12px; height: 12px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ── Form grid ── */
+    .fg { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+    @media (max-width: 480px) { .fg { grid-template-columns: 1fr; } }
+    .c2 { grid-column: 1 / -1; }
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field label { font-size: .82rem; font-weight: 700; }
+    .req { color: var(--red); margin-left: 2px; }
+    .hint { font-size: .7rem; color: var(--muted); }
+    .errt { font-size: .7rem; color: var(--red); }
+
+    /* Inputs */
+    .iw { position: relative; }
+    .iico { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; stroke: var(--muted); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+    .iw.hi input, .iw.hi select { padding-left: 34px; }
+    .iw input, .iw select, .field > input, .field > select {
+      width: 100%; background: var(--subtle); border: 1.5px solid var(--border);
+      border-radius: 10px; padding: 9px 12px; font-size: .84rem; color: var(--fg);
+      outline: none; transition: border-color .18s, box-shadow .18s; appearance: none;
+    }
+    .iw input:focus, .iw select:focus { border-color: var(--navy2); box-shadow: 0 0 0 3px rgba(26,58,92,.1); }
+    input::placeholder { color: var(--muted); }
+    .sw { position: relative; }
+    .sw select { padding-right: 28px; }
+    .sarr { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 13px; height: 13px; stroke: var(--muted); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+    .pw-tog { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; display: flex; padding: 0; }
+    .pw-tog svg { width: 14px; height: 14px; stroke: var(--muted); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .pw-tog:hover svg { stroke: var(--fg); }
+
+    /* PW strength */
+    .pw-bars { display: flex; gap: 4px; margin-top: 4px; }
+    .pwb { height: 5px; flex: 1; border-radius: 3px; background: #101824; transition: background .2s; }
+    .pwb.ok { background: var(--green); }
+
+    /* Checkboxes */
+    .chk { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; }
+    .chk input[type="checkbox"] { width: 16px; height: 16px; margin-top: 2px; accent-color: var(--navy2); cursor: pointer; flex-shrink: 0; }
+    .chk span { font-size: .82rem; color: var(--muted); line-height: 1.5; }
+    .chk a { color: var(--navy2); font-weight: 700; text-decoration: none; }
+    .chk a:hover { text-decoration: underline; }
+
+    /* Nav */
+    .fnav { display: flex; align-items: center; justify-content: space-between; padding-top: 13px; border-top: 1.5px solid var(--border); }
+    .bbk { display: flex; align-items: center; gap: 6px; background: none; border: none; font-size: .84rem; font-weight: 700; color: var(--muted); transition: color .18s; }
+    .bbk:hover { color: var(--fg); }
+    .bbk svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .bnx { display: flex; align-items: center; gap: 6px; background: linear-gradient(135deg, var(--navy2), #1e4d7b); color: #fff; border: none; border-radius: 11px; padding: 10px 22px; font-size: .84rem; font-weight: 800; transition: opacity .18s, transform .1s; }
+    .bnx:hover { opacity: .9; }
+    .bnx:active { transform: scale(.97); }
+    .bnx svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .bsub { display: flex; align-items: center; gap: 6px; background: linear-gradient(135deg, #1b5e20, var(--green)); color: #fff; border: none; border-radius: 11px; padding: 10px 22px; font-size: .84rem; font-weight: 800; transition: opacity .18s; }
+    .bsub:hover { opacity: .9; }
+    .bsub svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* Success */
+    .scard { background: var(--card); border-radius: 22px; padding: 40px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 18px; border: 1.5px solid var(--border); }
+    .sicon { width: 76px; height: 76px; border-radius: 50%; background: linear-gradient(135deg, var(--navy2), var(--green)); display: flex; align-items: center; justify-content: center; }
+    .sicon svg { width: 34px; height: 34px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .summ { width: 100%; background: var(--subtle); border-radius: 14px; padding: 14px; text-align: left; }
+    .summ-t { font-size: .7rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 10px; }
+    .summ-r { display: flex; justify-content: space-between; font-size: .82rem; margin-bottom: 6px; }
+    .summ-r span:first-child { color: var(--muted); }
+    .summ-r span:last-child { font-weight: 700; }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- LEFT PANEL (Slideshow + Logo) -->
+  <div class="left">
+    <img class="slide-img" id="sl-img" src="https://images.unsplash.com/photo-1633734973050-d6499a977c17?w=900&h=1100&fit=crop&auto=format" alt="Students" />
+    <div class="slide-ov"></div>
+    <div class="left-ct">
+      <div class="big-logo">
+        <div class="logo-badge lg"><span>CC</span><div class="logo-dot"></div></div>
+        <div class="logo-text">
+          <div class="lm" style="font-size:1.55rem">CAMPUS<span> CONNECT</span></div>
+          <div class="ls" style="font-size:.68rem;margin-top:3px">Community Platform · ZA</div>
+        </div>
+      </div>
+      <div style="flex:1"></div>
+      <div>
+        <div class="slide-cap" id="sl-cap">
+          <p class="slide-num" id="sl-num">01 / 05</p>
+          <p class="slide-txt" id="sl-txt">Celebrate every milestone</p>
+        </div>
+        <div class="dots" id="sl-dots"></div>
+        <div class="pills" style="margin-top:14px">
+          <div class="pill"><span class="pill-dot"></span>Bursaries</div>
+          <div class="pill"><span class="pill-dot"></span>Health Services</div>
+          <div class="pill"><span class="pill-dot"></span>Opportunities</div>
+          <div class="pill"><span class="pill-dot"></span>Issue Reporting</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right">
+    <div class="form-wrap">
+
+      <!-- Mobile logo -->
+      <div class="mob-logo">
+        <div class="logo-badge md"><span>CC</span><div class="logo-dot"></div></div>
+        <div class="logo-text">
+          <div class="lm">CAMPUS<span> CONNECT</span></div>
+          <div class="ls" style="font-size:.62rem">Community Platform · ZA</div>
+        </div>
+      </div>
+
+      <!-- ══ SIGN IN ══ -->
+      <div id="view-signin">
+        <div class="heading"><h2>Welcome back</h2><p>Don't have an account? <a href="#" onclick="showReg()">Register here</a></p></div>
+        <div class="si-form">
+          <div id="si-err" class="si-err hidden">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Incorrect email or password. Please try again.
+          </div>
+          <div class="field">
+            <label>Email Address</label>
+            <div class="iw hi">
+              <svg class="iico" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              <input type="email" id="si-email" placeholder="kutlwanompshe@email.com" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Password</label>
+            <div class="iw hi" style="position:relative">
+              <svg class="iico" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <input type="password" id="si-pw" placeholder="Your password" />
+              <button class="pw-tog" onclick="togglePw('si-pw',this)"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+            </div>
+            <a class="forgot" href="#" onclick="showForgot();return false;">Forgot password?</a>
+          </div>
+          <button class="btn btn-navy" onclick="doSignIn()">Sign In</button>
+          <div class="divider">or</div>
+          <button class="btn btn-outline" onclick="showReg()">Create a New Account</button>
+          <div class="demo-box">
+            <strong>Demo login:</strong> use any email + password after registering, or use<br/>
+            <code>demo@campusconnect.co.za</code> / <code>Demo@1234</code><br/>
+            <code>thandeka@example.com</code> / <code>Student@123</code><br/>
+            <code>sylivia@example.com</code> / <code>Community@123</code>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ REGISTER ══ -->
+      <div id="view-reg" class="hidden">
+        <div class="heading"><h2>Create your account</h2><p>Already registered? <a href="#" onclick="showSignin()">Sign in here</a></p></div>
+
+        <!-- Type selector -->
+        <div id="type-sel">
+          <p style="font-size:.84rem;font-weight:700;margin-bottom:12px">I am registering as a…</p>
+          <div class="type-grid">
+            <div class="type-card" onclick="selectType('student')">
+              <div class="ti"><svg viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></div>
+              <div><div class="tl">Student</div><div class="td2">Enrolled at a TVET, college, or university</div></div>
+              <div class="tc">Register <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+            </div>
+            <div class="type-card" onclick="selectType('community')">
+              <div class="ti"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+              <div><div class="tl">Community Member</div><div class="td2">Resident or worker in the local community</div></div>
+              <div class="tc">Register <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+            </div>
+          </div>
+          <div class="stats" style="margin-top:14px">
+            <div><div class="sv">12,400+</div><div class="sl">Registered Members</div></div>
+            <div><div class="sv">R2.4B+</div><div class="sl">Funding Listed</div></div>
+            <div><div class="sv">9 Provinces</div><div class="sl">Nationwide Reach</div></div>
+          </div>
+        </div>
+
+        <!-- Multi-step form -->
+        <div id="reg-form" class="hidden" style="display:flex;flex-direction:column;gap:16px">
+          <div class="step-hdr">
+            <div style="display:flex;align-items:center">
+              <div class="pips" id="reg-pips"></div>
+              <span class="step-lbl" id="reg-lbl">1/4 — Personal Info</span>
+            </div>
+            <button class="change-btn" onclick="changeType()"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Change type</button>
+          </div>
+          <div class="role-badge" id="role-badge"><svg id="role-icon" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg><span id="role-txt">Student</span></div>
+
+          <!-- Step 0: Personal -->
+          <div class="rs" id="rs-0">
+            <div class="fg">
+              <div class="field"><label>First Name <span class="req">*</span></label><div class="iw hi"><svg class="iico" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><input type="text" id="r-fn" placeholder="Kutlwano"/></div><span class="errt" id="e-fn"></span></div>
+              <div class="field"><label>Last Name <span class="req">*</span></label><div class="iw"><input type="text" id="r-ln" placeholder="Mpshe"/></div><span class="errt" id="e-ln"></span></div>
+              <div class="field"><label>SA ID Number <span class="req">*</span></label><div class="iw"><input type="text" id="r-id" placeholder="0000000000000" maxlength="13"/></div><span class="hint">13-digit South African ID</span><span class="errt" id="e-id"></span></div>
+              <div class="field"><label>Date of Birth <span class="req">*</span></label><div class="iw hi"><svg class="iico" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><input type="date" id="r-dob"/></div><span class="errt" id="e-dob"></span></div>
+              <div class="field"><label>Gender <span class="req">*</span></label><div class="iw sw"><svg class="sarr" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg><select id="r-gen"><option value="" disabled selected>Select</option><option>Male</option><option>Female</option><option>Non-binary</option><option>Prefer not to say</option></select></div><span class="errt" id="e-gen"></span></div>
+              <div class="field"><label>Email Address <span class="req">*</span></label><div class="iw hi"><svg class="iico" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><input type="email" id="r-em" placeholder="kutlwanompshe@email.com"/></div><span class="errt" id="e-em"></span></div>
+            </div>
+          </div>
+
+          <!-- Step 1 student -->
+          <div class="rs hidden" id="rs-1-student">
+            <div class="fg">
+              <div class="field"><label>Student Number <span class="req">*</span></label><div class="iw"><input type="text" id="r-sn" placeholder="STU2024001"/></div><span class="errt" id="e-sn"></span></div>
+              <div class="field"><label>Year of Study <span class="req">*</span></label><div class="iw sw"><svg class="sarr" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg><select id="r-yr"><option value="" disabled selected>Select</option><option>1st Year</option><option>2nd Year</option><option>3rd Year</option><option>4th Year</option><option>Postgraduate</option><option>Part-time</option></select></div><span class="errt" id="e-yr"></span></div>
+              <div class="field c2"><label>Institution <span class="req">*</span></label><div class="iw sw"><svg class="sarr" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg><select id="r-inst"><option value="" disabled selected>Select institution</option><option>University of Johannesburg</option><option>University of Pretoria</option><option>University of Cape Town</option><option>Wits University</option><option>Stellenbosch University</option><option>UNISA</option><option>Tshwane University of Technology</option><option>Cape Peninsula University of Technology</option><option>Durban University of Technology</option><option>University of Limpopo</option><option>Other</option></select></div><span class="errt" id="e-inst"></span></div>
+              <div class="field"><label>Faculty <span class="req">*</span></label><div class="iw sw"><svg class="sarr" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg><select id="r-fac"><option value="" disabled selected>Select</option><option>Science & Engineering</option><option>Humanities & Social Sciences</option><option>Commerce & Management</option><option>Health Sciences</option><option>Law</option><option>Education</option><option>Arts & Design</option><option>Information Communication & Technology</option><option>Agriculture</option><option>Other</option></select></div><span class="errt" id="e-fac"></span></div>
+              <div class="field"><label>Residence Type</label><div class="iw sw"><svg class="sarr" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg><select id="r-res"><option value="" disabled selected>Select</option><option>On-campus residence</option><option>Off-campus private</option><option>Family home</option><option>Student house</option></select></div></div>
+              <div class="field c2"><label>Qualification / Programme <span class="req">*</span></label><div class="iw"><input type="text" id="r-qual" placeholder="e.g. BSc Computer Science"/></div><span class="errt" id="e-qual"></span></div>
+            </div>
+          </div>
+
+          <!-- Step 1 community -->
+          <div class="rs hidden" id="rs-1-community">
+            <div class="fg">
+              <div class="field"><label>Occupation <span class="req">*</span></label><div class="iw"><input type="text" id="r-occ" placeholder="e.g. Teacher, Nurse"/></div><span class="errt" id="e-occ"></span></div>
+              <div class="field"><label>Organisation</label><div class="iw"><input type="text" id="r-org" placeholder="Optional"/></div></div>
+              <div class="field"><label>Suburb</label><div class="iw"><input type="text" id="r-sub" placeholder="e.g. Soweto"/></div></div>
+              <div class="field"><label>City / Town <span class="req">*</span></label><div class="iw"><input type="text" id="r-city" placeholder="e.g. Johannesburg"/></div><span class="errt" id="e-city"></span></div>
+              <div class="field c2"><label>Province <span class="req">*</span></label><div class="iw sw"><svg class="sarr" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg><select id="r-prov"><option value="" disabled selected>Select province</option><option>Eastern Cape</option><option>Free State</option><option>Gauteng</option><option>KwaZulu-Natal</option><option>Limpopo</option><option>Mpumalanga</option><option>Northern Cape</option><option>North West</option><option>Western Cape</option></select></div><span class="errt" id="e-prov"></span></div>
+              <div class="field c2"><label>Phone Number</label><div class="iw hi"><svg class="iico" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.99 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.92 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg><input type="tel" id="r-tel" placeholder="+27 71 000 0000"/></div></div>
+            </div>
+          </div>
+
+          <!-- Step 2 student: Address -->
+          <div class="rs hidden" id="rs-2-student">
+            <div class="fg">
+              <div class="field"><label>Phone Number <span class="req">*</span></label><div class="iw hi"><svg class="iico" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.99 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.92 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg><input type="tel" id="r-ph" placeholder="+27 71 000 0000"/></div><span class="hint">SA mobile number</span><span class="errt" id="e-ph"></span></div>
+              <div class="field"><label>Province</label><div class="iw sw"><svg class="sarr" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg><select id="r-pr"><option value="" disabled selected>Select</option><option>Eastern Cape</option><option>Free State</option><option>Gauteng</option><option>KwaZulu-Natal</option><option>Limpopo</option><option>Mpumalanga</option><option>Northern Cape</option><option>North West</option><option>Western Cape</option></select></div></div>
+              <div class="field"><label>City / Town</label><div class="iw"><input type="text" id="r-cit" placeholder="e.g. Pretoria"/></div></div>
+              <div class="field"><label>Suburb</label><div class="iw"><input type="text" id="r-sb" placeholder="e.g. Hatfield"/></div></div>
+              <div class="field c2"><label>Home / Residence Address <span class="req">*</span></label><div class="iw"><input type="text" id="r-adr" placeholder="e.g. Res Block A, University of Pretoria"/></div><span class="errt" id="e-adr"></span></div>
+            </div>
+          </div>
+
+          <!-- Account Setup (last step) -->
+          <div class="rs hidden" id="rs-account">
+            <div class="fg">
+              <div class="field c2"><label>Password <span class="req">*</span></label>
+                <div class="iw hi" style="position:relative"><svg class="iico" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><input type="password" id="r-pw" placeholder="Create a strong password" oninput="updateStrength()"/><button class="pw-tog" onclick="togglePw('r-pw',this)"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+                <span class="hint">At least 8 characters</span>
+                <div class="pw-bars"><div class="pwb" id="pb0"></div><div class="pwb" id="pb1"></div><div class="pwb" id="pb2"></div><div class="pwb" id="pb3"></div></div>
+                <span class="errt" id="e-pw"></span></div>
+              <div class="field c2"><label>Confirm Password <span class="req">*</span></label>
+                <div class="iw hi" style="position:relative"><svg class="iico" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><input type="password" id="r-cpw" placeholder="Repeat your password"/><button class="pw-tog" onclick="togglePw('r-cpw',this)"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+                <span class="errt" id="e-cpw"></span></div>
+              <div class="field c2">
+                <div style="display:flex;flex-direction:column;gap:10px;padding-top:4px">
+                  <label class="chk"><input type="checkbox" id="r-terms"/><span>I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>. I consent to my data being used for platform services.</span></label>
+                  <span class="errt" id="e-terms"></span>
+                  <label class="chk"><input type="checkbox" id="r-notif"/><span>Notify me about bursaries, opportunities, and community announcements via email and SMS.</span></label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="fnav">
+            <button class="bbk" id="reg-back" onclick="regBack()" style="visibility:hidden"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back</button>
+            <button class="bnx" id="reg-next" onclick="regNext()">Continue <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+          </div>
+        </div>
+
+        <!-- Registration Success -->
+        <div id="reg-success" class="hidden">
+          <div class="scard">
+            <div class="sicon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div>
+              <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:6px">Account Created!</h2>
+              <p style="font-size:.84rem;color:var(--muted);line-height:1.6">Welcome, <strong id="sc-name" style="color:var(--navy2)"></strong>. Your account is ready. Verification sent to <span id="sc-email" style="font-family:'DM Mono',monospace;font-size:.78rem;background:var(--subtle);padding:1px 6px;border-radius:5px"></span>.</p>
+            </div>
+            <div class="summ">
+              <p class="summ-t">Account Summary</p>
+              <div class="summ-r"><span>Role</span><span id="sc-role" style="color:var(--navy2)">—</span></div>
+              <div class="summ-r"><span id="sc-k2">Institution</span><span id="sc-v2">—</span></div>
+              <div class="summ-r"><span>Notifications</span><span id="sc-notif">—</span></div>
+            </div>
+            <a href="app.html" style="width:100%"><button class="btn btn-navy" style="display:flex;align-items:center;justify-content:center;gap:7px">Go to Dashboard <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button></a>
+            <button onclick="showSignin()" style="background:none;border:none;font-size:.8rem;color:var(--muted);cursor:pointer">Sign in with a different account</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ FORGOT PASSWORD ══ -->
+      <div id="view-forgot" class="hidden">
+
+        <!-- Step 1: request reset -->
+        <div id="fp-request">
+          <div class="heading"><h2>Reset your password</h2><p>Remembered it after all? <a href="#" onclick="showSignin();return false;">Back to sign in</a></p></div>
+          <div class="si-form">
+            <div id="fp-err" class="si-err hidden">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span id="fp-err-txt">Please enter a valid email address.</span>
+            </div>
+            <p style="font-size:.84rem;color:var(--muted);line-height:1.6">Enter the email address linked to your account and we'll send you a link to reset your password.</p>
+            <div class="field">
+              <label>Email Address</label>
+              <div class="iw hi">
+                <svg class="iico" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                <input type="email" id="fp-email" placeholder="kutlwanompshe@email.com" />
+              </div>
+            </div>
+            <button class="btn btn-navy" onclick="sendResetLink()">Send Reset Link</button>
+            <div class="demo-box">
+              <strong>Demo note:</strong> no real email is sent. Try <code>demo@campusconnect.co.za</code>, <code>naledi.khumalo@example.com</code>, or any address you registered with.
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: link "sent" confirmation -->
+        <div id="fp-sent" class="hidden">
+          <div class="scard">
+            <div class="sicon"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+            <div>
+              <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:6px">Check your email</h2>
+              <p style="font-size:.84rem;color:var(--muted);line-height:1.6">If an account exists for <span id="fp-sent-email" style="font-family:'DM Mono',monospace;font-size:.78rem;background:var(--subtle);padding:1px 6px;border-radius:5px"></span>, a reset link is on its way.</p>
+            </div>
+            <div class="demo-box">
+              <strong>Demo fixture:</strong> since there's no real inbox here, use the button below to simulate clicking the link from the email.
+            </div>
+            <button class="btn btn-green" onclick="openResetForm()">Simulate Clicking Email Link</button>
+            <button onclick="showSignin()" style="background:none;border:none;font-size:.8rem;color:var(--muted);cursor:pointer">Back to sign in</button>
+          </div>
+        </div>
+
+        <!-- Step 3: set new password -->
+        <div id="fp-reset" class="hidden">
+          <div class="heading"><h2>Choose a new password</h2><p>Resetting for <strong id="fp-reset-email" style="color:var(--navy2)"></strong></p></div>
+          <div class="si-form">
+            <div id="fp-reset-err" class="si-err hidden">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span id="fp-reset-err-txt">Passwords must match and be at least 8 characters.</span>
+            </div>
+            <div class="field">
+              <label>New Password</label>
+              <div class="iw hi" style="position:relative">
+                <svg class="iico" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <input type="password" id="fp-pw" placeholder="At least 8 characters" />
+                <button class="pw-tog" onclick="togglePw('fp-pw',this)"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+              </div>
+            </div>
+            <div class="field">
+              <label>Confirm New Password</label>
+              <div class="iw hi" style="position:relative">
+                <svg class="iico" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <input type="password" id="fp-cpw" placeholder="Re-enter password" />
+                <button class="pw-tog" onclick="togglePw('fp-cpw',this)"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+              </div>
+            </div>
+            <button class="btn btn-navy" onclick="submitNewPassword()">Reset Password</button>
+            <button onclick="showSignin()" style="background:none;border:none;font-size:.8rem;color:var(--muted);cursor:pointer">Cancel</button>
+          </div>
+        </div>
+
+        <!-- Step 4: done -->
+        <div id="fp-done" class="hidden">
+          <div class="scard">
+            <div class="sicon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div>
+              <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:6px">Password updated</h2>
+              <p style="font-size:.84rem;color:var(--muted);line-height:1.6">Your password has been reset. You can now sign in with your new password.</p>
+            </div>
+            <button class="btn btn-navy" onclick="showSignin()">Back to Sign In</button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Demo credentials ────────────────────────────────────────────────────
+  const DEMO = { email:'demo@campusconnect.co.za', password:'Demo@1234', firstName:'Demo', lastName:'User', type:'student', institution:'Campus Connect Demo' };
+
+  // ── Fixture users (sessionStorage) ───────────────────────────────────────
+  // Seeds a couple of pre-registered test accounts into sessionStorage so the
+  // sign-in and forgot-password flows have real data to work against without
+  // requiring manual registration first. Only runs if 'ccUsers' is empty,
+  // so it never clobbers accounts a user registered earlier in the session.
+  const FIXTURE_USERS = [
+    { firstName:'Naledi', lastName:'Khumalo', email:'naledi.khumalo@example.com', password:'Student@123', type:'student', institution:'University of Pretoria', city:'', province:'', notifications:true },
+    { firstName:'Thabo', lastName:'Mokoena', email:'thabo.mokoena@example.com', password:'Community@123', type:'community', institution:'', city:'Johannesburg', province:'Gauteng', notifications:false }
+  ];
+  function seedFixtureUsers() {
+    const existing = JSON.parse(sessionStorage.getItem('ccUsers')||'[]');
+    if (existing.length === 0) {
+      sessionStorage.setItem('ccUsers', JSON.stringify(FIXTURE_USERS));
+    }
+  }
+  seedFixtureUsers();
+
+  // ── View toggles ────────────────────────────────────────────────────────
+  function showReg() { document.getElementById('view-signin').classList.add('hidden'); document.getElementById('view-forgot').classList.add('hidden'); document.getElementById('view-reg').classList.remove('hidden'); }
+  function showSignin() {
+    document.getElementById('view-reg').classList.add('hidden'); document.getElementById('view-forgot').classList.add('hidden'); document.getElementById('view-signin').classList.remove('hidden');
+    document.getElementById('reg-success').classList.add('hidden');
+    document.getElementById('reg-form').classList.add('hidden');
+    document.getElementById('type-sel').classList.remove('hidden');
+    regStep=0; regType=null;
+  }
+  function showForgot() {
+    document.getElementById('view-signin').classList.add('hidden'); document.getElementById('view-reg').classList.add('hidden');
+    document.getElementById('view-forgot').classList.remove('hidden');
+    ['fp-request','fp-sent','fp-reset','fp-done'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+    document.getElementById('fp-request').classList.remove('hidden');
+    document.getElementById('fp-err').classList.add('hidden');
+    document.getElementById('fp-email').value = document.getElementById('si-email').value.trim();
+  }
+
+  // ── Sign In ─────────────────────────────────────────────────────────────
+  function doSignIn() {
+    const email = document.getElementById('si-email').value.trim();
+    const pw    = document.getElementById('si-pw').value;
+    const err   = document.getElementById('si-err');
+    if (email===DEMO.email && pw===DEMO.password) { saveAndGo(DEMO); return; }
+    const users = JSON.parse(sessionStorage.getItem('ccUsers')||'[]');
+    const found = users.find(u=>u.email===email && u.password===pw);
+    if (found) { saveAndGo(found); return; }
+    err.classList.remove('hidden');
+  }
+  function saveAndGo(user) {
+    sessionStorage.setItem('ccUser', JSON.stringify(user));
+    window.location.href = 'app.html';
+  }
+
+  // ── Forgot Password (fixture) ──────────────────────────────────────────
+  let fpEmail = '';
+  function findUserByEmail(email) {
+    if (email === DEMO.email) return DEMO;
+    const users = JSON.parse(sessionStorage.getItem('ccUsers')||'[]');
+    return users.find(u=>u.email===email) || null;
+  }
+  function sendResetLink() {
+    const email = document.getElementById('fp-email').value.trim();
+    const err = document.getElementById('fp-err'), errTxt = document.getElementById('fp-err-txt');
+    if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      errTxt.textContent = 'Please enter a valid email address.';
+      err.classList.remove('hidden');
+      return;
+    }
+    err.classList.add('hidden');
+    fpEmail = email;
+    // Fixture: always show the same "check your email" state, regardless of
+    // whether the account exists, so we don't leak which emails are registered.
+    document.getElementById('fp-sent-email').textContent = email;
+    document.getElementById('fp-request').classList.add('hidden');
+    document.getElementById('fp-sent').classList.remove('hidden');
+  }
+  function openResetForm() {
+    document.getElementById('fp-reset-email').textContent = fpEmail;
+    document.getElementById('fp-reset-err').classList.add('hidden');
+    document.getElementById('fp-pw').value = '';
+    document.getElementById('fp-cpw').value = '';
+    document.getElementById('fp-sent').classList.add('hidden');
+    document.getElementById('fp-reset').classList.remove('hidden');
+  }
+  function submitNewPassword() {
+    const pw = document.getElementById('fp-pw').value;
+    const cpw = document.getElementById('fp-cpw').value;
+    const err = document.getElementById('fp-reset-err'), errTxt = document.getElementById('fp-reset-err-txt');
+    if (pw.length < 8) {
+      errTxt.textContent = 'Password must be at least 8 characters.';
+      err.classList.remove('hidden');
+      return;
+    }
+    if (pw !== cpw) {
+      errTxt.textContent = 'Passwords must match.';
+      err.classList.remove('hidden');
+      return;
+    }
+    err.classList.add('hidden');
+    const user = findUserByEmail(fpEmail);
+    if (user) {
+      user.password = pw;
+      if (user === DEMO) {
+        DEMO.password = pw; // demo account lives only in memory for this session
+      } else {
+        const users = JSON.parse(sessionStorage.getItem('ccUsers')||'[]');
+        const idx = users.findIndex(u=>u.email===fpEmail);
+        if (idx > -1) { users[idx] = user; sessionStorage.setItem('ccUsers', JSON.stringify(users)); }
+      }
+    }
+    document.getElementById('fp-reset').classList.add('hidden');
+    document.getElementById('fp-done').classList.remove('hidden');
+    document.getElementById('si-email').value = fpEmail;
+  }
+
+  // ── Registration ────────────────────────────────────────────────────────
+  let regType=null, regStep=0;
+  const S_STEPS=['rs-0','rs-1-student','rs-2-student','rs-account'];
+  const C_STEPS=['rs-0','rs-1-community','rs-account'];
+  const S_LBLS=['Personal Info','Academic Details','Address & Contact','Account Setup'];
+  const C_LBLS=['Personal Info','Community Details','Account Setup'];
+  function steps(){ return regType==='student'?S_STEPS:C_STEPS; }
+  function lbls(){ return regType==='student'?S_LBLS:C_LBLS; }
+
+  function selectType(t){
+    regType=t; regStep=0;
+    document.getElementById('type-sel').classList.add('hidden');
+    const f=document.getElementById('reg-form'); f.classList.remove('hidden'); f.style.display='flex';
+    document.getElementById('role-txt').textContent=t==='student'?'Student':'Community Member';
+    document.getElementById('role-icon').innerHTML=t==='student'
+      ?'<path d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>'
+      :'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>';
+    renderStep();
+  }
+  function changeType(){ regType=null; regStep=0; document.getElementById('reg-form').classList.add('hidden'); document.getElementById('type-sel').classList.remove('hidden'); clearErrs(); }
+
+  function renderStep(){
+    const ss=steps();
+    document.querySelectorAll('.rs').forEach(e=>e.classList.add('hidden'));
+    document.getElementById(ss[regStep]).classList.remove('hidden');
+    const pips=document.getElementById('reg-pips'); pips.innerHTML='';
+    ss.forEach((_,i)=>{ const d=document.createElement('div'); d.className='pip'; d.style.width=i===regStep?'36px':'22px'; d.style.background=i<regStep?'#2e7d32':i===regStep?'#1a3a5c':'rgba(26,58,92,.18)'; pips.appendChild(d); });
+    document.getElementById('reg-lbl').textContent=(regStep+1)+'/'+ss.length+' — '+lbls()[regStep];
+    document.getElementById('reg-back').style.visibility=regStep>0?'visible':'hidden';
+    const nx=document.getElementById('reg-next');
+    if(regStep===ss.length-1){ nx.className='bsub'; nx.innerHTML='<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Complete Registration'; nx.onclick=submitReg; }
+    else { nx.className='bnx'; nx.innerHTML='Continue <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>'; nx.onclick=regNext; }
+  }
+
+  function v(id){ return (document.getElementById('r-'+id)||{}).value||''; }
+  function vc(id){ return (document.getElementById('r-'+id)||{}).checked||false; }
+  function setE(id,m){ const e=document.getElementById('e-'+id); if(e) e.textContent=m||''; }
+  function clearErrs(){ document.querySelectorAll('.errt').forEach(e=>e.textContent=''); }
+
+  function validate(){
+    clearErrs(); let ok=true;
+    function req(id,m){ if(!v(id).trim()){ setE(id,m||'Required'); ok=false; } }
+    if(regStep===0){
+      req('fn'); req('ln');
+      if(!v('em').match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)){ setE('em','Valid email required'); ok=false; }
+      if(!v('id').match(/^\d{13}$/)){ setE('id','Must be 13 digits'); ok=false; }
+      if(!v('dob')){ setE('dob','Required'); ok=false; }
+      if(!v('gen')){ setE('gen','Required'); ok=false; }
+    }
+    if(regStep===1&&regType==='student'){ req('sn'); req('inst'); req('fac'); req('yr'); req('qual'); }
+    if(regStep===1&&regType==='community'){ req('occ'); req('city'); if(!v('prov')){ setE('prov','Required'); ok=false; } }
+    if(regStep===2&&regType==='student'){ if(!v('ph').match(/^(\+27|0)[6-8][0-9]{8}$/)){ setE('ph','Valid SA mobile required'); ok=false; } req('adr'); }
+    if(regStep===steps().length-1){ if(v('pw').length<8){ setE('pw','Min 8 characters'); ok=false; } if(v('pw')!==v('cpw')){ setE('cpw','Passwords must match'); ok=false; } if(!vc('terms')){ setE('terms','You must accept the terms'); ok=false; } }
+    return ok;
+  }
+  function regNext(){ if(validate()){ regStep++; renderStep(); } }
+  function regBack(){ clearErrs(); regStep--; renderStep(); }
+
+  function submitReg(){
+    if(!validate()) return;
+    const user={ firstName:v('fn'),lastName:v('ln'),email:v('em'),password:v('pw'),type:regType,institution:regType==='student'?v('inst'):'',city:regType==='community'?v('city'):'',province:regType==='community'?v('prov'):'',notifications:vc('notif') };
+    const users=JSON.parse(sessionStorage.getItem('ccUsers')||'[]'); users.push(user); sessionStorage.setItem('ccUsers',JSON.stringify(users));
+    sessionStorage.setItem('ccUser',JSON.stringify(user));
+    document.getElementById('reg-form').style.display='none';
+    document.getElementById('reg-success').classList.remove('hidden');
+    document.getElementById('sc-name').textContent=user.firstName+' '+user.lastName;
+    document.getElementById('sc-email').textContent=user.email;
+    document.getElementById('sc-role').textContent=user.type==='student'?'Student':'Community Member';
+    document.getElementById('sc-k2').textContent=user.type==='student'?'Institution':'Location';
+    document.getElementById('sc-v2').textContent=user.type==='student'?user.institution:(user.city+(user.province?', '+user.province:''));
+    document.getElementById('sc-notif').textContent=user.notifications?'Enabled':'Disabled';
+  }
+
+  // ── Pw helpers ──────────────────────────────────────────────────────────
+  function updateStrength(){ const pw=v('pw'); [pw.length>=8,/[A-Z]/.test(pw),/[0-9]/.test(pw),/[^A-Za-z0-9]/.test(pw)].forEach((m,i)=>{ const b=document.getElementById('pb'+i); if(b) b.classList.toggle('ok',m); }); }
+  function togglePw(id,btn){ const inp=document.getElementById(id); const show=inp.type==='text'; inp.type=show?'password':'text'; btn.querySelector('svg').innerHTML=show?'<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>':'<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'; }
+
+  // ── Slideshow ───────────────────────────────────────────────────────────
+  const SLIDES=[
+    {url:'https://images.unsplash.com/photo-1633734973050-d6499a977c17?w=900&h=1100&fit=crop&auto=format',cap:'Celebrate every milestone'},
+    {url:'https://images.unsplash.com/photo-1758270705518-b61b40527e76?w=900&h=1100&fit=crop&auto=format',cap:'Learn together, grow together'},
+    {url:'https://images.unsplash.com/photo-1611183110451-7e156d15581d?w=900&h=1100&fit=crop&auto=format',cap:'Your community, your voice'},
+    {url:'https://images.unsplash.com/photo-1554893814-598f52fca25e?w=900&h=1100&fit=crop&auto=format',cap:'Supporting each other every day'},
+    {url:'https://images.unsplash.com/photo-1620829813573-7c9e1877706f?w=900&h=1100&fit=crop&auto=format',cap:'Unlock every opportunity'},
+  ];
+  let cur=0;
+  function buildDots(){ const d=document.getElementById('sl-dots'); d.innerHTML=''; SLIDES.forEach((_,i)=>{ const b=document.createElement('button'); b.className='dot'+(i===cur?' on':''); b.style.width=i===cur?'28px':'6px'; b.onclick=()=>go(i); d.appendChild(b); }); }
+  function go(i){ const img=document.getElementById('sl-img'),ca=document.getElementById('sl-cap'); img.style.opacity=0; ca.style.opacity=0; setTimeout(()=>{ cur=i; img.src=SLIDES[i].url; document.getElementById('sl-txt').textContent=SLIDES[i].cap; document.getElementById('sl-num').textContent=String(i+1).padStart(2,'0')+' / '+String(SLIDES.length).padStart(2,'0'); img.style.opacity=1; ca.style.opacity=1; buildDots(); },450); }
+  document.getElementById('sl-img').style.transition='opacity .45s';
+  document.getElementById('sl-cap').style.transition='opacity .45s';
+  buildDots();
+  setInterval(()=>go((cur+1)%SLIDES.length),4500);
+
+  // ── Auto-redirect if already logged in ─────────────────────────────────
+  if(sessionStorage.getItem('ccUser')) window.location.href='app.html';
+</script>
+</body>
+</html>
